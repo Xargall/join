@@ -38,3 +38,5 @@ create policy "contacts: delete own"
 on public.contacts for delete
 to authenticated
 using (auth.uid() = user_id);
+
+alter publication supabase_realtime add table public.contacts;

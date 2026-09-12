@@ -27,3 +27,5 @@ create policy "subtasks: authenticated delete"
 on public.subtasks for delete
 to authenticated
 using (true);
+
+alter publication supabase_realtime add table public.subtasks;

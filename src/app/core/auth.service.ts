@@ -75,10 +75,10 @@ export class AuthService {
      * @returns An error message string or `null` on success
      */
     async signup(name: string, email: string, password: string): Promise<string | null> {
-        const signupError = await this.signupWithSupabase(name, email, password);
-        if (signupError) return signupError;
+        const signupResult = await this.signupWithSupabase(name, email, password);
+        if (typeof signupResult === 'string') return signupResult;
 
-        const contactError = await this.createContactForUser(name, email);
+        const contactError = await this.createContactForUser(signupResult.id, name, email);
         await this.supabase.client.auth.signOut();
         return contactError;
     }
@@ -89,13 +89,13 @@ export class AuthService {
      * @param name - Display name
      * @param email - Email address
      * @param password - Password
-     * @returns An error message string or `null` on success
+     * @returns The new user's id, or an error message string
      */
     private async signupWithSupabase(
         name: string,
         email: string,
         password: string,
-    ): Promise<string | null> {
+    ): Promise<{ id: string } | string> {
         const { data, error } = await this.supabase.client.auth.signUp({
             email,
             password,
@@ -103,23 +103,28 @@ export class AuthService {
         });
 
         if (error) return error.message;
-        if (!data.session) {
+        if (!data.session || !data.user) {
             return 'Please disable email confirmation in the Supabase Auth settings.';
         }
-        return null;
+        return { id: data.user.id };
     }
 
     /**
      * Creates a contact entry for a newly registered user.
      *
+     * @param userId - The new user's id, stored as the contact's `user_id`
      * @param name - The user's display name
      * @param email - The user's email address
      * @returns An error message string or `null` on success
      */
-    private async createContactForUser(name: string, email: string): Promise<string | null> {
+    private async createContactForUser(
+        userId: string,
+        name: string,
+        email: string,
+    ): Promise<string | null> {
         const { error } = await this.supabase.client
             .from('contacts')
-            .insert({ name, email, phone: '' });
+            .insert({ name, email, phone: '', user_id: userId });
         return error?.message ?? null;
     }
 

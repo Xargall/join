@@ -118,9 +118,12 @@ export class ContactsService implements OnDestroy {
      * @throws On database error
      */
     async addContact(contact: Omit<Contact, 'id'>): Promise<Contact> {
+        const {
+            data: { user },
+        } = await this.supabase.auth.getUser();
         const { data, error } = await this.supabase
             .from('contacts')
-            .insert(contact)
+            .insert({ ...contact, user_id: user?.id })
             .select()
             .single();
         if (error) throw error;

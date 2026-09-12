@@ -31,3 +31,5 @@ create policy "tasks: authenticated delete"
 on public.tasks for delete
 to authenticated
 using (true);
+
+alter publication supabase_realtime add table public.tasks;

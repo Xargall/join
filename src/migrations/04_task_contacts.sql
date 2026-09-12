@@ -26,3 +26,5 @@ create policy "task_contacts: authenticated delete"
 on public.task_contacts for delete
 to authenticated
 using (true);
+
+alter publication supabase_realtime add table public.task_contacts;
